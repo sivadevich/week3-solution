@@ -11,6 +11,7 @@ angular.module('NarrowItDownApp', [])
 // the results of the menu lookup.
 // It can only be used as an element and the HTML is stored in an external file.
 function FoundItemsDirective() {
+  
     var ddo = {
 		restrict: 'E',
 		templateUrl: 'foundItems.html',
