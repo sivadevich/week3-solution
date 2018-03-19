@@ -1,80 +1,112 @@
-(function (){
-  'use strict' ;
-  angular.module('NarrowItDownApp', [])
+( function() {
+'use strict';
+
+angular.module('NarrowItDownApp', [])
 .controller('NarrowItDownController', NarrowItDownController)
 .service('MenuSearchService', MenuSearchService)
-.constant('ApiBasePath', "https://davids-restaurant.herokuapp.com")
-.directive('foundItems', FoundItemsDirective);
+.directive('foundItems', FoundItemsDirective)
+.constant('davids', { url: 'https://davids-restaurant.herokuapp.com/'} );
 
+// This is the found-items directive that is used to display
+// the results of the menu lookup.
+// It can only be used as an element and the HTML is stored in an external file.
 function FoundItemsDirective() {
-  var ddo = {
-    templateUrl: 'foundItems.html',
-    scope: {
-      items: '<',
-     myTitle: '@title',
-     badRemove: '=',
-     onRemove: '&'
-    },
-    controller: FoundItemsDirectiveController,
-    controllerAs: 'narrowCntrl',
-    bindToController: true
-  };
-  return ddo;
+    var ddo = {
+		restrict: 'E',
+		templateUrl: 'foundItems.html',
+		scope: {
+			found: '<',
+			onRemove: '&',
+			empty: '<'
+		}
+	};
+	return ddo;
 }
 
-function FoundItemsDirectiveController() {
-var narrowCntrl = this;
-//narrowCntrl.foundItemsList=[];
-}
-
+// The NarrowItDownController controlls the functionality of
+// our lookup menu
 NarrowItDownController.$inject = ['$scope','MenuSearchService'];
+function NarrowItDownController($scope, MenuSearchService) {
+    var ctrl = this;
 
-function NarrowItDownController($scope,MenuSearchService) {
-  var narrowCntrl = this;
-  narrowCntrl.searchText ="";
-  narrowCntrl.foundItemsList = [];
-  narrowCntrl.title =  " items )";
-  console.log("Search Text Keyed in "+narrowCntrl.searchText);
-  narrowCntrl.getMatchedMenuItems = function () {
-    console.log("narrowCntrl getMatchedItems search Text - "+narrowCntrl.searchText);
-    var result =  MenuSearchService.getMatchedMenuItems(narrowCntrl.searchText);
-    result.then(function (result) {
-        // process result and only keep items that match
-        for (var i=0; i<result.data.menu_items.length; i++) {
-            var description = result.data.menu_items[i].description;
-            if(description.search(narrowCntrl.searchText)!=-1){
-            narrowCntrl.foundItemsList.push(result.data.menu_items[i]);
-            }
-        }
-          console.log("narrowCntrl Length ### ****  - "+narrowCntrl.foundItemsList.length);
-        //console.log("Items found - "+narrowCntrl.foundItemsList.length);
-      //  return service.getFoundItems();
-      });
-//narrowCntrl.foundItemsList =MenuSearchService.getFoundItems();
-    //console.log("narrowCntrl Length - "+narrowCntrl.foundItemsList);
-    setTimeout(function () {
-           //deferred.resolve();
-          console.log("narrowCntrl Length ****  - "+narrowCntrl.foundItemsList.length);
-       }, 2000);
-  };
-  console.log("narrowCntrl Length ())))  - "+narrowCntrl.foundItemsList.length);
+	ctrl.searchTerm = '';
+	ctrl.empty = '';
 
+	ctrl.searchItem = function () {
+   console.log("Seah");
+		if (ctrl.searchTerm !== '') {
+			var promise = MenuSearchService.getMatchedMenuItems(ctrl.searchTerm);
+			promise.then(function(result) {
+				ctrl.found = result;
+				//ctrl.empty = MenuSearchService.isEmpty();
+			})
+			.catch(function(error) {
+			//console.log(error);
+			});
+            ctrl.empty = '';
+		} else {
+            ctrl.found = [];
+			ctrl.empty = 'Nothing Found';
+			//console.log(ctrl.empty);
+		};
+	};
+
+
+	ctrl.remove = function (itemIndex) {
+		return MenuSearchService.removeItem(itemIndex);
+	}
 
 }
 
-MenuSearchService.$inject = ['$http', 'ApiBasePath'];
-function MenuSearchService($http, ApiBasePath) {
-  var service = this;
-var foundItemsList = [];
-service.getFoundItems = function () {
-   return foundItemsList;
- };
-  service.getMatchedMenuItems = function (searchText) {
-    console.log("Search Text - "+searchText);
-    return $http({
-      method: "GET",
-      url: (ApiBasePath + "/menu_items.json")
-    })
-    };
+// The MenuSearchService that does the lookup of the menu items and the
+// narrowing down based on a search item.
+MenuSearchService.$inject = ['$http','davids'];
+function MenuSearchService($http, davids) {
+    var service = this;
+	var foundItems = [];
+	//var emptyMessage = 'Nothing Found';
+
+	service.getMatchedMenuItems = function (searchTerm) {
+
+		searchTerm = searchTerm.trim().toLowerCase();
+        console.log( "Service getMatchedMenuItems "+searchTerm );
+
+		return $http ({
+			method: "GET",
+			url: davids.url + "menu_items.json"
+		})
+		.then(function(response) {
+			foundItems = [];
+			for(var i=0; i<response.data.menu_items.length; i++) {
+
+                if (searchTerm !== '' ) {
+                    console.log("have search term");
+                    if (response.data.menu_items[i].description.toLowerCase().indexOf(searchTerm) !== -1) {
+                        foundItems.push(response.data.menu_items[i]);
+                    }
+                } else {
+                    console.log("No have search term");
+                    foundItems.push(response.data.menu_items[i]);
+                }
+
+			}
+			return foundItems;
+
+		}).catch(function(errorResponse) {
+			console.log(errorResponse);
+		});
+	};
+
+	service.removeItem = function (itemIndex) {
+		foundItems.splice(itemIndex, 1);
+		return foundItems;
+	};
+
+    service.clearItems = function() {
+        foundItems = [];
+    }
+
 }
+
+
 })();

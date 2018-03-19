@@ -3,30 +3,29 @@
   <head>
     <title>Narrow Down Your Menu Choice</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script type="text/javascript" src="angular.min.js"></script>
-    <script src="app.js"></script>
     <link rel="stylesheet" href="styles/bootstrap.min.css">
     <link rel="stylesheet" href="styles/styles.css">
+    <script src="angular.min.js"></script>
+    <script src="app.js"></script>
   </head>
-<body ng-app="NarrowItDownApp">
-   <div class="container" ng-controller = "NarrowItDownController as narrowCntrl">
+<body ng-app='NarrowItDownApp' >
+   <div class="container" ng-controller="NarrowItDownController as ctrl" >
     <h1>Narrow Down Your Chinese Menu Choice</h1>
 
     <div class="form-group">
-      <input type="text" placeholder="search term" class="form-control" ng-model="narrowCntrl.searchText" value="chicken">
+      <input type="text" ng-model="ctrl.searchTerm" placeholder="search term" class="form-control">
     </div>
     <div class="form-group narrow-button">
-      <button class="btn btn-primary" ng-click=narrowCntrl.getMatchedMenuItems(); >Narrow It Down For Me!</button>
+      <button class="btn btn-primary" ng-click="ctrl.searchItem()" >Narrow It Down For Me!</button>
     </div>
-<br>
-    <!-- found-items should be implemented as a component
-    <found-items found-items="...." on-remove="...."></found-items>-->
-    <found-items
-       items="narrowCntrl.items"
-       title="{{narrowCntrl.title}}"
-       bad-remove="narrowCntrl.removeItem"
-       on-remove="narrowCntrl.removeItem(index)"></found-items>
+
+    <!--<ol>
+        <li ng-repeat="item in foundItems">{{ item.name }}</li>
+    </ol>-->
+
+    <!-- found-items should be implemented as a component -->
+    <found-items found='ctrl.found' on-remove='ctrl.remove(index)' empty='ctrl.empty'></found-items>
   </div>
 
-</body>
+ </body>
 </html>

@@ -1,8 +1,14 @@
-<h3>Title: {{ narrowCntrl.myTitle }}</h3>
-<ol>
-  <li ng-repeat="item in narrowCntrl.foundItemsList">
-    {{ item.name }} of {{ item.description }}
-    <button ng-click="narrowCntrl.onRemove({index: $index});">Dont want this one</button>
-  </li>
-</ol>
-<!--<div class="error" ng-if="list.cookiesInList()">WARNING! WARNING! COOKIES DETECTED!</div>-->
+<br>
+<br>
+<br>
+<div>
+	<table>
+		<tr class="border_bottom highlight" ng-repeat='item in found'>
+		  <td width="10%">{{item.short_name.trim()}}</td>
+            <td width="25%">{{item.name}}</td>
+            <td width="45%">{{item.description}}</td>
+            <td width="30%" ><button class="btn btn-primary" ng-click='onRemove({index: $index})'>Don't want this one!</button></td>
+		</tr>
+	</table>
+</div>
+<div ng-if="empty">{{empty}}</div>
